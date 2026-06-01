@@ -1,3 +1,5 @@
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.Scanner;
 
 public class Main {
@@ -5,12 +7,12 @@ public class Main {
     private static int proximoNumero = 1;
 
     public static void main(String[] args) {
-        FilaPedido fila = new FilaPedido();
+        Queue<Pedido> fila = new ArrayDeque<>();
         Pedido emPreparo = null;
         int opcao;
 
         do {
-            System.out.println("\n=== Sistema de Pedidos da Lanchonete ===");
+            System.out.println("\n=== Sistema de Pedidos da Lanchonete (Refatorado com Queue) ===");
             System.out.println("1 - Registrar pedido");
             System.out.println("2 - Iniciar preparo do próximo pedido");
             System.out.println("3 - Finalizar pedido em preparo");
@@ -39,14 +41,14 @@ public class Main {
                             "AGUARDANDO_PREPARO"
                     );
 
-                    fila.enfileirar(pedido);
+                    fila.offer(pedido); // entra no fim da fila
                     System.out.println("Pedido registrado: " + pedido);
                 }
                 case 2 -> {
                     if (emPreparo != null) {
                         System.out.println("Já existe pedido em preparo. Finalize-o antes.");
                     } else {
-                        emPreparo = fila.desenfileirar();
+                        emPreparo = fila.poll(); // remove do início da fila (FIFO)
                         if (emPreparo == null) {
                             System.out.println("Fila vazia.");
                         } else {
@@ -64,7 +66,7 @@ public class Main {
                         emPreparo = null;
                     }
                 }
-                case 4 -> fila.listar();
+                case 4 -> listarFila(fila);
                 case 5 -> {
                     if (emPreparo == null) {
                         System.out.println("Nenhum pedido em preparo.");
@@ -76,6 +78,19 @@ public class Main {
                 default -> System.out.println("Opção inválida.");
             }
         } while (opcao != 0);
+    }
+
+    private static void listarFila(Queue<Pedido> fila) {
+        if (fila.isEmpty()) {
+            System.out.println("Fila vazia.");
+            return;
+        }
+
+        int i = 1;
+        for (Pedido pedido : fila) {
+            System.out.println(i++ + ". " + pedido);
+        }
+        System.out.println("Total na fila: " + fila.size());
     }
 
     private static int lerInt() {
@@ -124,57 +139,6 @@ public class Main {
                     " | Pedido: " + descricaoPedido +
                     " | Valor: R$ " + String.format("%.2f", valorTotal) +
                     " | Status: " + status;
-        }
-    }
-
-    static class FilaPedido {
-        private No inicio;
-        private No fim;
-        private int tamanho;
-
-        public void enfileirar(Pedido pedido) {
-            No novo = new No(pedido);
-            if (fim == null) {
-                inicio = fim = novo;
-            } else {
-                fim.prox = novo;
-                fim = novo;
-            }
-            tamanho++;
-        }
-
-        public Pedido desenfileirar() {
-            if (inicio == null) return null;
-
-            Pedido pedido = inicio.valor;
-            inicio = inicio.prox;
-            if (inicio == null) fim = null;
-            tamanho--;
-            return pedido;
-        }
-
-        public void listar() {
-            if (inicio == null) {
-                System.out.println("Fila vazia.");
-                return;
-            }
-
-            No atual = inicio;
-            int i = 1;
-            while (atual != null) {
-                System.out.println(i++ + ". " + atual.valor);
-                atual = atual.prox;
-            }
-            System.out.println("Total na fila: " + tamanho);
-        }
-
-        static class No {
-            Pedido valor;
-            No prox;
-
-            No(Pedido valor) {
-                this.valor = valor;
-            }
         }
     }
 }
